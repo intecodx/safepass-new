@@ -4,6 +4,7 @@ import {
   getConstructionPlans as getConstructionPlansMemory,
   addConstructionPlan as addConstructionPlanMemory,
 } from "@/lib/construction-plans-storage"
+import { sendSMS } from "@/lib/sms-service"
 
 export async function GET() {
   try {
@@ -82,6 +83,17 @@ export async function POST(request: NextRequest) {
 
     if (!newPlan) {
       return NextResponse.json({ error: "공사계획 등록 중 오류가 발생했습니다." }, { status: 500 })
+    }
+
+    // 현장대리인 전화번호가 있으면 SMS 발송
+    if (site_manager_phone) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://safepass-new.vercel.app"
+      const smsText = `[인천종합에너지 Safepass]\n${title} 공사가 등록되었습니다.\n출입 신청 URL : ${appUrl}\n기간: ${start_date} ~ ${end_date}`
+      try {
+        await sendSMS({ to: site_manager_phone, text: smsText })
+      } catch (e) {
+        console.error("공사계획 등록 SMS 발송 실패(무시):", e)
+      }
     }
 
     return NextResponse.json({ success: true, id: newPlan.id })
