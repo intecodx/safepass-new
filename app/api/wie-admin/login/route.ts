@@ -1,15 +1,17 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 
+// WIE 관리자 계정 (환경변수에서 로드, 기본값은 개발용)
+const WIE_ADMIN_ID = process.env.WIE_ADMIN_LOGIN_ID || "1234"
+const WIE_ADMIN_PW = process.env.WIE_ADMIN_LOGIN_PW || "1234"
+
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json()
 
-    // WIE 관리자 인증 (ID: 1234, PW: 1234)
-    if (username === "1234" && password === "1234") {
+    if (username === WIE_ADMIN_ID && password === WIE_ADMIN_PW) {
       const cookieStore = cookies()
 
-      // 세션 쿠키 설정
       cookieStore.set("wie-admin-session", "authenticated", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",

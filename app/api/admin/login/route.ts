@@ -1,50 +1,52 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 
+// 관리자 계정 (환경변수에서 로드, 기본값은 개발용)
+const ADMIN_ACCOUNTS = [
+  {
+    username: process.env.ADMIN_SECURITY_ID || "safe2025",
+    password: process.env.ADMIN_SECURITY_PW || "safe2025",
+    sessionName: "security-session",
+    userType: "security",
+  },
+  {
+    username: process.env.ADMIN_INTECO_ID || "gon2025",
+    password: process.env.ADMIN_INTECO_PW || "gon2025",
+    sessionName: "admin-session",
+    userType: "admin",
+  },
+  {
+    username: process.env.ADMIN_WIE_ID || "gon0412",
+    password: process.env.ADMIN_WIE_PW || "gon0412",
+    sessionName: "wie-admin-session",
+    userType: "wie-admin",
+  },
+  {
+    username: process.env.ADMIN_WIE_SECURITY_ID || "pass2025",
+    password: process.env.ADMIN_WIE_SECURITY_PW || "pass2025",
+    sessionName: "wie-security-session",
+    userType: "wie-security",
+  },
+]
+
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json()
 
-    if (username === "safe2025" && password === "safe2025") {
+    const account = ADMIN_ACCOUNTS.find(
+      (acc) => acc.username === username && acc.password === password
+    )
+
+    if (account) {
       const cookieStore = await cookies()
-      cookieStore.set("security-session", "authenticated", {
+      cookieStore.set(account.sessionName, "authenticated", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         maxAge: 60 * 60 * 24, // 24시간
       })
 
-      return NextResponse.json({ success: true, userType: "security" })
-    } else if (username === "gon2025" && password === "gon2025") {
-      const cookieStore = await cookies()
-      cookieStore.set("admin-session", "authenticated", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24, // 24시간
-      })
-
-      return NextResponse.json({ success: true, userType: "admin" })
-    } else if (username === "gon0412" && password === "gon0412") {
-      const cookieStore = await cookies()
-      cookieStore.set("wie-admin-session", "authenticated", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24, // 24시간
-      })
-
-      return NextResponse.json({ success: true, userType: "wie-admin" })
-    } else if (username === "pass2025" && password === "pass2025") {
-      const cookieStore = await cookies()
-      cookieStore.set("wie-security-session", "authenticated", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24, // 24시간
-      })
-
-      return NextResponse.json({ success: true, userType: "wie-security" })
+      return NextResponse.json({ success: true, userType: account.userType })
     } else {
       return NextResponse.json({ error: "로그인 정보가 올바르지 않습니다." }, { status: 401 })
     }

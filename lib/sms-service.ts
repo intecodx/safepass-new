@@ -1,16 +1,11 @@
 import crypto from "crypto"
 import FormData from "form-data"
 
-// SOLAPI 설정
-const apiKey = process.env.SOLAPI_API_KEY || "NCSJWPTZ4C17OQ8L"
-const apiSecret = process.env.SOLAPI_API_SECRET || "4TSWUWEHVRXGFFDEPX8NZR7APRTJM4HP"
-const defaultFrom = process.env.SOLAPI_FROM_PHONE || "01054887216"
+// SOLAPI 설정 (환경변수에서만 로드)
+const apiKey = process.env.SOLAPI_API_KEY || ""
+const apiSecret = process.env.SOLAPI_API_SECRET || ""
+const defaultFrom = process.env.SOLAPI_FROM_PHONE || ""
 const baseURL = "https://api.solapi.com"
-
-console.log("=== SOLAPI 환경변수 확인 ===")
-console.log("API Key:", apiKey ? `${apiKey.substring(0, 8)}...` : "없음")
-console.log("API Secret:", apiSecret ? `${apiSecret.substring(0, 8)}...` : "없음")
-console.log("From Phone:", defaultFrom)
 
 // HMAC 인증을 위한 헬퍼 함수들
 function createSignature(stringToSign: string, key: string): string {
