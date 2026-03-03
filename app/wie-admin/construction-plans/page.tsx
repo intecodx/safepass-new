@@ -22,6 +22,7 @@ interface ConstructionPlan {
   start_date: string
   end_date: string
   site_manager: string
+  site_manager_phone?: string
   supervisor?: string
   status: string
   created_at: string
@@ -41,6 +42,7 @@ export default function WieConstructionPlansPage() {
     start_date: "",
     end_date: "",
     site_manager: "",
+    site_manager_phone: "",
     supervisor: "",
     status: "planned",
   })
@@ -56,6 +58,7 @@ export default function WieConstructionPlansPage() {
     start_date: "",
     end_date: "",
     site_manager: "",
+    site_manager_phone: "",
     supervisor: "",
     status: "planned",
   })
@@ -230,6 +233,7 @@ export default function WieConstructionPlansPage() {
           start_date: "",
           end_date: "",
           site_manager: "",
+          site_manager_phone: "",
           supervisor: "",
           status: "planned",
         })
@@ -349,6 +353,7 @@ export default function WieConstructionPlansPage() {
       start_date: plan.start_date,
       end_date: plan.end_date,
       site_manager: plan.site_manager,
+      site_manager_phone: plan.site_manager_phone || "",
       supervisor: plan.supervisor || "",
       status: plan.status,
     })
@@ -365,6 +370,7 @@ export default function WieConstructionPlansPage() {
       start_date: "",
       end_date: "",
       site_manager: "",
+      site_manager_phone: "",
       supervisor: "",
       status: "planned",
     })
@@ -577,6 +583,21 @@ export default function WieConstructionPlansPage() {
                       />
                     </div>
 
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-site_manager_phone" className="text-base font-medium text-gray-700">
+                        현장관리자 전화번호
+                      </Label>
+                      <Input
+                        id="edit-site_manager_phone"
+                        type="tel"
+                        value={editFormData.site_manager_phone}
+                        onChange={(e) => setEditFormData({ ...editFormData, site_manager_phone: e.target.value })}
+                        className="h-12 text-base border-2 focus:border-purple-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="edit-supervisor" className="text-base font-medium text-gray-700">
                         감독자
@@ -800,6 +821,23 @@ export default function WieConstructionPlansPage() {
                     />
                   </div>
 
+                  <div className="space-y-2">
+                    <Label htmlFor="site_manager_phone" className="text-base font-medium">
+                      현장관리자 전화번호 *
+                    </Label>
+                    <Input
+                      id="site_manager_phone"
+                      type="tel"
+                      value={formData.site_manager_phone}
+                      onChange={(e) => setFormData({ ...formData, site_manager_phone: e.target.value })}
+                      required
+                      placeholder="예: 010-1234-5678"
+                      className="h-12"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="supervisor" className="text-base font-medium">
                       감독자
