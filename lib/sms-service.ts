@@ -4,7 +4,7 @@ import FormData from "form-data"
 // SOLAPI 설정 (환경변수에서만 로드)
 const apiKey = process.env.SOLAPI_API_KEY || ""
 const apiSecret = process.env.SOLAPI_API_SECRET || ""
-const defaultFrom = process.env.SOLAPI_FROM_PHONE || ""
+const defaultFrom = process.env.SOLAPI_FROM_PHONE || process.env.SOLAPI_FROM_NUMBER || ""
 const baseURL = "https://api.solapi.com"
 
 // HMAC 인증을 위한 헬퍼 함수들
