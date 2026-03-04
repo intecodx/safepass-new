@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import {
   ArrowLeft,
   Check,
@@ -75,6 +75,28 @@ export default function ApplicationsPage() {
   const [todayDeparted, setTodayDeparted] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 15
+
+  const topScrollRef = useRef<HTMLDivElement>(null)
+  const tableScrollRef = useRef<HTMLDivElement>(null)
+  const isSyncingScroll = useRef(false)
+
+  const handleTopScroll = useCallback(() => {
+    if (isSyncingScroll.current) return
+    isSyncingScroll.current = true
+    if (tableScrollRef.current && topScrollRef.current) {
+      tableScrollRef.current.scrollLeft = topScrollRef.current.scrollLeft
+    }
+    isSyncingScroll.current = false
+  }, [])
+
+  const handleTableScroll = useCallback(() => {
+    if (isSyncingScroll.current) return
+    isSyncingScroll.current = true
+    if (topScrollRef.current && tableScrollRef.current) {
+      topScrollRef.current.scrollLeft = tableScrollRef.current.scrollLeft
+    }
+    isSyncingScroll.current = false
+  }, [])
 
   const fetchPlans = async () => {
     try {
@@ -796,7 +818,15 @@ export default function ApplicationsPage() {
             </div>
 
             <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
+              <div
+                ref={topScrollRef}
+                onScroll={handleTopScroll}
+                className="overflow-x-auto"
+                style={{ marginBottom: "-1px" }}
+              >
+                <div style={{ width: "800px", height: "1px" }} />
+              </div>
+              <div className="overflow-x-auto" ref={tableScrollRef} onScroll={handleTableScroll}>
                 <table className="w-full min-w-[800px]">
                   <thead className="bg-gray-50 border-b">
                     <tr>
