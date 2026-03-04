@@ -81,13 +81,18 @@ export async function registerVehicle(params: RegisterVehicleParams): Promise<Am
 
     console.log("아마노 API 요청:", JSON.stringify(requestBody, null, 2))
 
+    const jsonBody = JSON.stringify(requestBody)
+    console.log("아마노 API 전송 바이트:", Buffer.byteLength(jsonBody, "utf8"))
+
     const response = await fetch(`${AMANO_API_URL}/interop/insertPreDiscountInfo.do`, {
       method: "POST",
       headers: {
         Authorization: createBasicAuth(),
-        "Content-Type": "application/json",
+        "Content-Type": "application/json;charset=UTF-8",
+        Accept: "application/json",
+        "Content-Length": String(Buffer.byteLength(jsonBody, "utf8")),
       },
-      body: JSON.stringify(requestBody),
+      body: jsonBody,
     })
 
     const result = await response.json()
@@ -153,13 +158,17 @@ export async function deleteVehicle(params: DeleteVehicleParams): Promise<AmanoR
 
     console.log("아마노 삭제 요청:", JSON.stringify(requestBody, null, 2))
 
+    const jsonBody = JSON.stringify(requestBody)
+
     const response = await fetch(`${AMANO_API_URL}/interop/deletePreDiscountInfo.do`, {
       method: "POST",
       headers: {
         Authorization: createBasicAuth(),
-        "Content-Type": "application/json",
+        "Content-Type": "application/json;charset=UTF-8",
+        Accept: "application/json",
+        "Content-Length": String(Buffer.byteLength(jsonBody, "utf8")),
       },
-      body: JSON.stringify(requestBody),
+      body: jsonBody,
     })
 
     const result = await response.json()
