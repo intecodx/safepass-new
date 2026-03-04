@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { updateUserStatus } from "@/lib/supabase-storage"
+import { updateUserStatus, getUserById } from "@/lib/supabase-storage"
 import { sendSMS } from "@/lib/sms-service"
+import { deleteVehicle } from "@/lib/amano-api"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -15,6 +16,21 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   try {
     const { phone, reason } = await request.json()
     const applicationId = Number.parseInt(params.id)
+
+    // 반려 전 아마노 등록 차량이 있으면 삭제
+    const existingUser = await getUserById(applicationId)
+    if (existingUser) {
+      const vehicleInfo = existingUser.vehicle_info as any
+      if (vehicleInfo?.amanoPreDiscountId) {
+        console.log(`🚗 아마노 방문차량 삭제 시도: preDiscountId=${vehicleInfo.amanoPreDiscountId}`)
+        const amanoDeleteResult = await deleteVehicle({ preDiscountId: vehicleInfo.amanoPreDiscountId })
+        if (amanoDeleteResult.success) {
+          console.log("✅ 아마노 방문차량 삭제 완료")
+        } else {
+          console.warn(`⚠️ 아마노 방문차량 삭제 실패: ${amanoDeleteResult.error}`)
+        }
+      }
+    }
 
     // 사용자 상태를 반려로 업데이트
     const updatedUser = await updateUserStatus(applicationId, "rejected")

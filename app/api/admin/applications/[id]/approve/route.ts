@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { updateUserStatus, getUserById, getConstructionPlanById } from "@/lib/supabase-storage"
+import { updateUserStatus, updateUser, getUserById, getConstructionPlanById } from "@/lib/supabase-storage"
 import { sendSMS } from "@/lib/sms-service"
+import { registerVehicle } from "@/lib/amano-api"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -62,6 +63,43 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const updatedUser = await updateUserStatus(applicationId, "approved")
     if (!updatedUser) {
       return NextResponse.json({ error: "상태 업데이트에 실패했습니다." }, { status: 500, headers: noStoreHeaders })
+    }
+
+    // 아마노 주차관제 시스템 연동 (차량소유자인 경우에만)
+    let amanoResult = null
+    const vehicleInfo = updatedUser.vehicle_info as any
+    if (vehicleInfo?.number) {
+      console.log(`🚗 아마노 방문차량 등록 시작: ${vehicleInfo.number}`)
+
+      let constructionPlan = null
+      if (updatedUser.construction_plan_id) {
+        constructionPlan = await getConstructionPlanById(updatedUser.construction_plan_id)
+      }
+
+      const startDate = constructionPlan?.start_date || new Date().toISOString().split("T")[0]
+      const endDate = constructionPlan?.end_date || new Date().toISOString().split("T")[0]
+
+      amanoResult = await registerVehicle({
+        carNo: vehicleInfo.number,
+        startDate,
+        endDate,
+        userName: updatedUser.name,
+        mobile: phoneNumber,
+        memo: `SafePass 출입승인 - ${constructionPlan?.title || "미지정"}`,
+      })
+
+      if (amanoResult.success && amanoResult.preDiscountId) {
+        // 아마노 등록 ID를 vehicle_info에 저장 (나중에 삭제 시 사용)
+        await updateUser(applicationId, {
+          vehicle_info: {
+            ...vehicleInfo,
+            amanoPreDiscountId: amanoResult.preDiscountId,
+          },
+        } as any)
+        console.log(`✅ 아마노 등록 완료: preDiscountId=${amanoResult.preDiscountId}`)
+      } else if (!amanoResult.success) {
+        console.warn(`⚠️ 아마노 등록 실패 (승인은 계속 진행): ${amanoResult.error}`)
+      }
     }
 
     const userInfo = {
@@ -127,6 +165,7 @@ ${qrCodeImageUrl}`
           smsMessage,
           smsError: smsResult.error,
           warning: "SMS 발송 실패",
+          amanoResult: amanoResult ? { success: amanoResult.success, error: amanoResult.error } : null,
         },
         { headers: noStoreHeaders },
       )
@@ -142,6 +181,7 @@ ${qrCodeImageUrl}`
         qrCodeImageUrl,
         smsMessage,
         smsResult: smsResult.data,
+        amanoResult: amanoResult ? { success: amanoResult.success, error: amanoResult.error } : null,
       },
       { headers: noStoreHeaders },
     )

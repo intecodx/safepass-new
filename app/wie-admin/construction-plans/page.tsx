@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { ArrowLeft, Plus, FileText } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -46,6 +46,40 @@ export default function WieConstructionPlansPage() {
     supervisor: "",
     status: "planned",
   })
+
+  const topScrollRef = useRef<HTMLDivElement>(null)
+  const bottomScrollRef = useRef<HTMLDivElement>(null)
+  const topScrollInnerRef = useRef<HTMLDivElement>(null)
+  const isSyncingScroll = useRef(false)
+
+  useEffect(() => {
+    const syncWidth = () => {
+      if (bottomScrollRef.current && topScrollInnerRef.current) {
+        topScrollInnerRef.current.style.width = `${bottomScrollRef.current.scrollWidth}px`
+      }
+    }
+    syncWidth()
+    window.addEventListener("resize", syncWidth)
+    return () => window.removeEventListener("resize", syncWidth)
+  }, [plans])
+
+  const handleTopScroll = useCallback(() => {
+    if (isSyncingScroll.current) return
+    isSyncingScroll.current = true
+    if (bottomScrollRef.current && topScrollRef.current) {
+      bottomScrollRef.current.scrollLeft = topScrollRef.current.scrollLeft
+    }
+    requestAnimationFrame(() => { isSyncingScroll.current = false })
+  }, [])
+
+  const handleBottomScroll = useCallback(() => {
+    if (isSyncingScroll.current) return
+    isSyncingScroll.current = true
+    if (topScrollRef.current && bottomScrollRef.current) {
+      topScrollRef.current.scrollLeft = bottomScrollRef.current.scrollLeft
+    }
+    requestAnimationFrame(() => { isSyncingScroll.current = false })
+  }, [])
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [editingPlan, setEditingPlan] = useState<ConstructionPlan | null>(null)
@@ -905,7 +939,15 @@ export default function WieConstructionPlansPage() {
 
           <Card>
             <CardContent className="p-0">
-              <div className="overflow-x-auto">
+              {/* 상단 스크롤바 */}
+              <div
+                ref={topScrollRef}
+                onScroll={handleTopScroll}
+                className="overflow-x-auto overflow-y-hidden h-4"
+              >
+                <div ref={topScrollInnerRef} className="h-px"></div>
+              </div>
+              <div ref={bottomScrollRef} onScroll={handleBottomScroll} className="overflow-x-auto">
                 <table className="w-full min-w-[1000px]">
                   <thead className="bg-gray-50 border-b">
                     <tr>
@@ -913,22 +955,19 @@ export default function WieConstructionPlansPage() {
                         등록일
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        공사명
+                        공사기간
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        발주처
+                        공사명
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         작업업체
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        현장관리자
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         감독자
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        공사기간
+                        현장관리자
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         상태
@@ -939,6 +978,9 @@ export default function WieConstructionPlansPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         처리
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        발주처
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -946,21 +988,6 @@ export default function WieConstructionPlansPage() {
                       <tr key={plan.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {new Date(plan.created_at).toLocaleDateString("ko-KR")}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{plan.title}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{plan.company}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{plan.work_company || "-"}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{plan.site_manager}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{plan.supervisor || "-"}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           <div>
@@ -973,6 +1000,18 @@ export default function WieConstructionPlansPage() {
                             </div>
                           </div>
                         </td>
+                        <td className="px-6 py-4 min-w-[200px]">
+                          <div className="text-sm font-medium text-gray-900">{plan.title}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{plan.work_company || "-"}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{plan.supervisor || "-"}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{plan.site_manager}</div>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {getStatusBadge(plan.status, plan.start_date, plan.end_date)}
                         </td>
@@ -981,18 +1020,21 @@ export default function WieConstructionPlansPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
-                            <Button variant="outline" size="sm" onClick={() => handleEditStart(plan)}>
+                            <Button variant="outline" size="sm" className="bg-orange-100 text-orange-600 hover:bg-orange-200 hover:text-orange-700" onClick={() => handleEditStart(plan)}>
                               수정
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50 bg-transparent"
+                              className="bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700"
                               onClick={() => handleDelete(plan.id, plan.title)}
                             >
                               삭제
                             </Button>
                           </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{plan.company}</div>
                         </td>
                       </tr>
                     ))}
