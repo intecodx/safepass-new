@@ -81,18 +81,31 @@ export async function registerVehicle(params: RegisterVehicleParams): Promise<Am
 
     console.log("아마노 API 요청:", JSON.stringify(requestBody, null, 2))
 
-    const jsonBody = JSON.stringify(requestBody)
-    console.log("아마노 API 전송 바이트:", Buffer.byteLength(jsonBody, "utf8"))
+    // form-urlencoded 형식으로 전송 (.do 엔드포인트는 Spring MVC 기반)
+    const formBody = new URLSearchParams()
+    formBody.append("lotAreaNo", String(requestBody.lotAreaNo))
+    formBody.append("registUserId", requestBody.registUserId)
+    formBody.append("registUserName", requestBody.registUserName)
+    formBody.append("discCodeNo", String(requestBody.discCodeNo))
+    formBody.append("carNo", requestBody.carNo)
+    formBody.append("dcCount", String(requestBody.dcCount))
+    formBody.append("startDtm", requestBody.startDtm)
+    formBody.append("endDtm", requestBody.endDtm)
+    formBody.append("dongcode", requestBody.dongcode)
+    formBody.append("hocode", requestBody.hocode)
+    formBody.append("memo", requestBody.memo)
+    formBody.append("mobile", requestBody.mobile)
+
+    console.log("아마노 API form body:", formBody.toString())
 
     const response = await fetch(`${AMANO_API_URL}/interop/insertPreDiscountInfo.do`, {
       method: "POST",
       headers: {
         Authorization: createBasicAuth(),
-        "Content-Type": "application/json;charset=UTF-8",
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
         Accept: "application/json",
-        "Content-Length": String(Buffer.byteLength(jsonBody, "utf8")),
       },
-      body: jsonBody,
+      body: formBody.toString(),
     })
 
     const result = await response.json()
@@ -158,17 +171,21 @@ export async function deleteVehicle(params: DeleteVehicleParams): Promise<AmanoR
 
     console.log("아마노 삭제 요청:", JSON.stringify(requestBody, null, 2))
 
-    const jsonBody = JSON.stringify(requestBody)
+    const formBody = new URLSearchParams()
+    formBody.append("lotAreaNo", String(requestBody.lotAreaNo))
+    formBody.append("registUserId", requestBody.registUserId)
+    formBody.append("preDiscountId", String(requestBody.preDiscountId))
+
+    console.log("아마노 삭제 form body:", formBody.toString())
 
     const response = await fetch(`${AMANO_API_URL}/interop/deletePreDiscountInfo.do`, {
       method: "POST",
       headers: {
         Authorization: createBasicAuth(),
-        "Content-Type": "application/json;charset=UTF-8",
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
         Accept: "application/json",
-        "Content-Length": String(Buffer.byteLength(jsonBody, "utf8")),
       },
-      body: jsonBody,
+      body: formBody.toString(),
     })
 
     const result = await response.json()
