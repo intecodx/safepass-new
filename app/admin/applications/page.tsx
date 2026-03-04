@@ -831,17 +831,16 @@ export default function ApplicationsPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
-              {tableContentWidth > 0 && (
-                <div
-                  ref={topScrollRef}
-                  onScroll={handleTopScroll}
-                  className="overflow-x-auto"
-                  style={{ marginBottom: "-1px" }}
-                >
-                  <div style={{ width: `${tableContentWidth}px`, height: "1px" }} />
-                </div>
-              )}
+            {tableContentWidth > 0 && (
+              <div
+                ref={topScrollRef}
+                onScroll={handleTopScroll}
+                className="overflow-x-scroll bg-white rounded-t-lg border border-b-0"
+              >
+                <div style={{ width: `${tableContentWidth}px`, height: "1px" }} />
+              </div>
+            )}
+            <div className={`bg-white ${tableContentWidth > 0 ? "rounded-b-lg border-t-0" : "rounded-lg"} border shadow-sm overflow-hidden`}>
               <div className="overflow-x-auto" ref={tableScrollRef} onScroll={handleTableScroll}>
                 <table className="w-full min-w-[800px]">
                   <thead className="bg-gray-50 border-b">
