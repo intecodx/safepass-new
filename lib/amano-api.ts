@@ -81,32 +81,44 @@ export async function registerVehicle(params: RegisterVehicleParams): Promise<Am
 
     console.log("아마노 API 요청:", JSON.stringify(requestBody, null, 2))
 
-    // form-urlencoded 형식으로 전송 (.do 엔드포인트는 Spring MVC 기반)
-    const formBody = new URLSearchParams()
-    formBody.append("lotAreaNo", String(requestBody.lotAreaNo))
-    formBody.append("registUserId", requestBody.registUserId)
-    formBody.append("registUserName", requestBody.registUserName)
-    formBody.append("discCodeNo", String(requestBody.discCodeNo))
-    formBody.append("carNo", requestBody.carNo)
-    formBody.append("dcCount", String(requestBody.dcCount))
-    formBody.append("startDtm", requestBody.startDtm)
-    formBody.append("endDtm", requestBody.endDtm)
-    formBody.append("dongcode", requestBody.dongcode)
-    formBody.append("hocode", requestBody.hocode)
-    formBody.append("memo", requestBody.memo)
-    formBody.append("mobile", requestBody.mobile)
+    const jsonBody = JSON.stringify(requestBody)
 
-    console.log("아마노 API form body:", formBody.toString())
+    // 쿼리 파라미터로 전송 시도 (일부 .do API는 URL 파라미터만 읽음)
+    const queryParams = new URLSearchParams()
+    queryParams.append("lotAreaNo", String(requestBody.lotAreaNo))
+    queryParams.append("registUserId", requestBody.registUserId)
+    queryParams.append("registUserName", requestBody.registUserName)
+    queryParams.append("discCodeNo", String(requestBody.discCodeNo))
+    queryParams.append("carNo", requestBody.carNo)
+    queryParams.append("dcCount", String(requestBody.dcCount))
+    queryParams.append("startDtm", requestBody.startDtm)
+    queryParams.append("endDtm", requestBody.endDtm)
+    queryParams.append("dongcode", requestBody.dongcode)
+    queryParams.append("hocode", requestBody.hocode)
+    queryParams.append("memo", requestBody.memo)
+    queryParams.append("mobile", requestBody.mobile)
 
-    const response = await fetch(`${AMANO_API_URL}/interop/insertPreDiscountInfo.do`, {
+    const apiUrl = `${AMANO_API_URL}/interop/insertPreDiscountInfo.do?${queryParams.toString()}`
+    console.log("아마노 API URL:", apiUrl)
+
+    // redirect: manual로 리다이렉트 감지
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         Authorization: createBasicAuth(),
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "Content-Type": "application/json;charset=UTF-8",
         Accept: "application/json",
       },
-      body: formBody.toString(),
+      body: jsonBody,
+      redirect: "manual",
     })
+
+    console.log("아마노 API 응답 상태:", response.status, response.statusText)
+    console.log("아마노 API 응답 URL:", response.url)
+    if (response.status >= 300 && response.status < 400) {
+      const redirectUrl = response.headers.get("Location")
+      console.log("⚠️ 리다이렉트 감지! Location:", redirectUrl)
+    }
 
     const result = await response.json()
     console.log("아마노 API 응답:", JSON.stringify(result, null, 2))
