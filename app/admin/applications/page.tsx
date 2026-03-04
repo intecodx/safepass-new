@@ -79,6 +79,7 @@ export default function ApplicationsPage() {
   const topScrollRef = useRef<HTMLDivElement>(null)
   const tableScrollRef = useRef<HTMLDivElement>(null)
   const isSyncingScroll = useRef(false)
+  const [tableContentWidth, setTableContentWidth] = useState(0)
 
   const handleTopScroll = useCallback(() => {
     if (isSyncingScroll.current) return
@@ -97,6 +98,19 @@ export default function ApplicationsPage() {
     }
     isSyncingScroll.current = false
   }, [])
+
+  useEffect(() => {
+    const tableEl = tableScrollRef.current
+    if (!tableEl) return
+    const updateWidth = () => {
+      const table = tableEl.querySelector("table")
+      if (table) setTableContentWidth(table.scrollWidth)
+    }
+    updateWidth()
+    const observer = new ResizeObserver(updateWidth)
+    observer.observe(tableEl)
+    return () => observer.disconnect()
+  }, [applications, selectedPlanFilter, currentPage])
 
   const fetchPlans = async () => {
     try {
@@ -818,14 +832,16 @@ export default function ApplicationsPage() {
             </div>
 
             <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
-              <div
-                ref={topScrollRef}
-                onScroll={handleTopScroll}
-                className="overflow-x-auto"
-                style={{ marginBottom: "-1px" }}
-              >
-                <div style={{ width: "800px", height: "1px" }} />
-              </div>
+              {tableContentWidth > 0 && (
+                <div
+                  ref={topScrollRef}
+                  onScroll={handleTopScroll}
+                  className="overflow-x-auto"
+                  style={{ marginBottom: "-1px" }}
+                >
+                  <div style={{ width: `${tableContentWidth}px`, height: "1px" }} />
+                </div>
+              )}
               <div className="overflow-x-auto" ref={tableScrollRef} onScroll={handleTableScroll}>
                 <table className="w-full min-w-[800px]">
                   <thead className="bg-gray-50 border-b">
