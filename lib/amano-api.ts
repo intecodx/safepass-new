@@ -4,10 +4,11 @@
  * 방문차량 등록/삭제를 통해 SafePass 승인된 차량이
  * 인천종합에너지 주차장 게이트를 자동 통과할 수 있도록 연동
  *
- * API 문서: Content-Type: application/json, UTF8
- * 인증: Basic Auth (userId:userPw → UTF8 → Base64)
- * HTTP: 9948, HTTPS: 9938
+ * 주의: 아마노 서버가 HTTP/1.0을 사용하므로 fetch(undici) 대신
+ * Node.js http 모듈을 직접 사용해야 함 (chunked encoding 방지)
  */
+
+import http from "http"
 
 // 환경변수에서 설정 로드
 const AMANO_API_URL = process.env.AMANO_API_URL || ""
@@ -19,14 +20,6 @@ const AMANO_DISC_CODE = parseInt(process.env.AMANO_DISC_CODE || "0")
 function createBasicAuth(): string {
   const credentials = `${AMANO_USER_ID}:${AMANO_USER_PW}`
   return `Basic ${Buffer.from(credentials, "utf8").toString("base64")}`
-}
-
-/**
- * AMANO_API_URL에서 HTTPS URL 생성
- * http://a22789.parkingweb.kr:9948 → https://a22789.parkingweb.kr:9938
- */
-function getHttpsUrl(): string {
-  return AMANO_API_URL.replace("http://", "https://").replace(":9948", ":9938")
 }
 
 export interface AmanoResponse {
@@ -59,52 +52,52 @@ function toAmanoDate(isoDate: string, isEnd: boolean): string {
 }
 
 /**
- * 아마노 API POST 요청 공통 함수
- * HTTPS 먼저 시도, 실패하면 HTTP로 폴백
+ * Node.js http 모듈로 POST 요청 (HTTP/1.0 호환)
+ * fetch(undici)는 chunked encoding을 사용하여 HTTP/1.0 서버에서 body가 비어보이는 문제 발생
  */
-async function amanoPost(endpoint: string, body: Record<string, any>): Promise<any> {
-  const jsonBody = JSON.stringify(body)
-  const headers = {
-    Authorization: createBasicAuth(),
-    "Content-Type": "application/json",
-  }
+function httpPost(apiUrl: string, endpoint: string, body: Record<string, any>): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const url = new URL(`${apiUrl}/interop/${endpoint}`)
+    const jsonBody = Buffer.from(JSON.stringify(body), "utf8")
 
-  // 1차: HTTPS 시도 (포트 9938)
-  const httpsUrl = `${getHttpsUrl()}/interop/${endpoint}`
-  console.log(`아마노 API 요청 [HTTPS]: ${httpsUrl}`)
-  console.log("요청 body:", jsonBody)
+    console.log(`아마노 API 요청: ${url.href}`)
+    console.log("요청 body:", JSON.stringify(body, null, 2))
+    console.log("Content-Length:", jsonBody.length)
 
-  try {
-    const httpsResponse = await fetch(httpsUrl, {
+    const options: http.RequestOptions = {
+      hostname: url.hostname,
+      port: url.port || 9948,
+      path: url.pathname,
       method: "POST",
-      headers,
-      body: jsonBody,
-    })
-    const httpsResult = await httpsResponse.json()
-    console.log("아마노 API 응답 [HTTPS]:", JSON.stringify(httpsResult, null, 2))
-
-    // HTTPS 성공 시 (컨텐츠 비어있음 에러가 아니면) 바로 리턴
-    if (httpsResult.data?.errorMessage?.includes("비어있음") !== true) {
-      return { response: httpsResponse, result: httpsResult, protocol: "HTTPS" }
+      headers: {
+        Authorization: createBasicAuth(),
+        "Content-Type": "application/json",
+        "Content-Length": jsonBody.length,
+      },
     }
-    console.log("⚠️ HTTPS에서도 컨텐츠 비어있음 - HTTP로 폴백 시도")
-  } catch (httpsError: any) {
-    console.log(`⚠️ HTTPS 실패 (${httpsError.message}) - HTTP로 폴백`)
-  }
 
-  // 2차: HTTP 폴백 (포트 9948)
-  const httpUrl = `${AMANO_API_URL}/interop/${endpoint}`
-  console.log(`아마노 API 요청 [HTTP]: ${httpUrl}`)
+    const req = http.request(options, (res) => {
+      let data = ""
+      res.on("data", (chunk) => { data += chunk })
+      res.on("end", () => {
+        console.log("아마노 API 응답 상태:", res.statusCode)
+        console.log("아마노 API 응답:", data)
+        try {
+          const result = JSON.parse(data)
+          resolve({ statusCode: res.statusCode, result })
+        } catch {
+          reject(new Error(`JSON 파싱 실패: ${data}`))
+        }
+      })
+    })
 
-  const httpResponse = await fetch(httpUrl, {
-    method: "POST",
-    headers,
-    body: jsonBody,
+    req.on("error", (error) => {
+      reject(error)
+    })
+
+    req.write(jsonBody)
+    req.end()
   })
-  const httpResult = await httpResponse.json()
-  console.log("아마노 API 응답 [HTTP]:", JSON.stringify(httpResult, null, 2))
-
-  return { response: httpResponse, result: httpResult, protocol: "HTTP" }
 }
 
 /**
@@ -140,14 +133,13 @@ export async function registerVehicle(params: RegisterVehicleParams): Promise<Am
       mobile: params.mobile?.replace(/[^0-9]/g, "") || "",
     }
 
-    const { response, result, protocol } = await amanoPost("insertPreDiscountInfo.do", requestBody)
-    console.log(`아마노 등록 응답 (${protocol}):`, JSON.stringify(result, null, 2))
+    const { statusCode, result } = await httpPost(AMANO_API_URL, "insertPreDiscountInfo.do", requestBody)
 
-    if (!response.ok) {
-      console.error("❌ 아마노 API HTTP 오류:", response.status)
+    if (statusCode !== 200) {
+      console.error("❌ 아마노 API HTTP 오류:", statusCode)
       return {
         success: false,
-        error: `아마노 API HTTP 오류: ${response.status}`,
+        error: `아마노 API HTTP 오류: ${statusCode}`,
         data: result,
       }
     }
@@ -201,14 +193,13 @@ export async function deleteVehicle(params: DeleteVehicleParams): Promise<AmanoR
       preDiscountId: params.preDiscountId,
     }
 
-    const { response, result, protocol } = await amanoPost("deletePreDiscountInfo.do", requestBody)
-    console.log(`아마노 삭제 응답 (${protocol}):`, JSON.stringify(result, null, 2))
+    const { statusCode, result } = await httpPost(AMANO_API_URL, "deletePreDiscountInfo.do", requestBody)
 
-    if (!response.ok) {
-      console.error("❌ 아마노 삭제 HTTP 오류:", response.status)
+    if (statusCode !== 200) {
+      console.error("❌ 아마노 삭제 HTTP 오류:", statusCode)
       return {
         success: false,
-        error: `아마노 API HTTP 오류: ${response.status}`,
+        error: `아마노 API HTTP 오류: ${statusCode}`,
         data: result,
       }
     }
