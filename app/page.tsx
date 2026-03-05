@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { User, GraduationCap, Search, ArrowRight, Globe } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/ui/logo"
 
 type Language = "ko" | "en" | "zh" | "ja"
@@ -344,14 +343,6 @@ export default function HomePage() {
         {/* Footer */}
         <div className="text-center mt-8 sm:mt-12">
           <p className="text-xs sm:text-sm text-gray-500 px-2">{texts[language].footer.copyright}</p>
-
-          <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
-            <Link href="/sms-test">
-              <Button variant="outline" size="sm" className="text-[10px] sm:text-xs bg-transparent h-8 sm:h-auto">
-                📱 SMS API 테스트 도구
-              </Button>
-            </Link>
-          </div>
         </div>
       </main>
     </div>
