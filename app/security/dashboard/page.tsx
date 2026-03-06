@@ -764,29 +764,50 @@ export default function SecurityDashboard() {
           <p className="text-sm text-gray-600">최근 7일간 출입 통계</p>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mb-6">
-            {chartData.map((day, index) => (
-              <Card key={index} className="text-center">
-                <CardContent className="p-4">
-                  <div className="text-sm font-medium text-gray-600 mb-2">{day.date}</div>
-                  <div className="space-y-2">
-                    <div className="flex flex-col items-center">
-                      <div className="text-lg font-bold text-blue-600">{day.출근}</div>
-                      <div className="text-xs text-gray-500">출근</div>
+          {(() => {
+            const maxVal = Math.max(...chartData.map((d) => Math.max(d.출근, d.퇴근)), 1)
+            return (
+              <div className="mb-6">
+                <div className="flex items-end justify-between gap-2 sm:gap-4" style={{ height: "200px" }}>
+                  {chartData.map((day, index) => (
+                    <div key={index} className="flex-1 flex flex-col items-center h-full justify-end">
+                      <div className="flex items-end gap-1 w-full justify-center" style={{ height: "160px" }}>
+                        <div className="flex flex-col items-center justify-end h-full flex-1 max-w-[24px]">
+                          {day.출근 > 0 && (
+                            <span className="text-[10px] sm:text-xs font-bold text-blue-600 mb-1">{day.출근}</span>
+                          )}
+                          <div
+                            className="w-full bg-blue-500 rounded-t-sm transition-all duration-500"
+                            style={{ height: `${(day.출근 / maxVal) * 140}px`, minHeight: day.출근 > 0 ? "4px" : "0" }}
+                          />
+                        </div>
+                        <div className="flex flex-col items-center justify-end h-full flex-1 max-w-[24px]">
+                          {day.퇴근 > 0 && (
+                            <span className="text-[10px] sm:text-xs font-bold text-orange-500 mb-1">{day.퇴근}</span>
+                          )}
+                          <div
+                            className="w-full bg-orange-400 rounded-t-sm transition-all duration-500"
+                            style={{ height: `${(day.퇴근 / maxVal) * 140}px`, minHeight: day.퇴근 > 0 ? "4px" : "0" }}
+                          />
+                        </div>
+                      </div>
+                      <div className="text-[10px] sm:text-xs text-gray-600 mt-2 font-medium">{day.date}</div>
                     </div>
-                    <div className="flex flex-col items-center">
-                      <div className="text-lg font-bold text-orange-600">{day.퇴근}</div>
-                      <div className="text-xs text-gray-500">퇴근</div>
-                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 bg-blue-500 rounded-sm" />
+                    <span className="text-xs text-gray-600">출근</span>
                   </div>
-                  <div className="mt-2 pt-2 border-t">
-                    <div className="text-sm font-semibold text-gray-800">{day.총출입}</div>
-                    <div className="text-xs text-gray-500">총 출입</div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 bg-orange-400 rounded-sm" />
+                    <span className="text-xs text-gray-600">퇴근</span>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </div>
+              </div>
+            )
+          })()}
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gradient-to-r from-blue-50 to-orange-50 rounded-lg">
             <div className="text-center">
