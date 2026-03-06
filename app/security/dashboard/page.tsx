@@ -766,69 +766,125 @@ export default function SecurityDashboard() {
         <CardContent>
           {(() => {
             const maxVal = Math.max(...chartData.map((d) => Math.max(d.출근, d.퇴근)), 1)
+            const barHeight = 220
+            const gridLines = Array.from({ length: 5 }, (_, i) => Math.round((maxVal / 4) * (4 - i)))
+            const weekTotal = chartData.reduce((s, d) => s + d.출근, 0)
+            const weekExit = chartData.reduce((s, d) => s + d.퇴근, 0)
+            const todayData = chartData[chartData.length - 1]
             return (
               <div className="mb-6">
-                <div className="flex items-end justify-between gap-2 sm:gap-4" style={{ height: "200px" }}>
-                  {chartData.map((day, index) => (
-                    <div key={index} className="flex-1 flex flex-col items-center h-full justify-end">
-                      <div className="flex items-end gap-1 w-full justify-center" style={{ height: "160px" }}>
-                        <div className="flex flex-col items-center justify-end h-full flex-1 max-w-[24px]">
-                          {day.출근 > 0 && (
-                            <span className="text-[10px] sm:text-xs font-bold text-blue-600 mb-1">{day.출근}</span>
-                          )}
-                          <div
-                            className="w-full bg-blue-500 rounded-t-sm transition-all duration-500"
-                            style={{ height: `${(day.출근 / maxVal) * 140}px`, minHeight: day.출근 > 0 ? "4px" : "0" }}
-                          />
-                        </div>
-                        <div className="flex flex-col items-center justify-end h-full flex-1 max-w-[24px]">
-                          {day.퇴근 > 0 && (
-                            <span className="text-[10px] sm:text-xs font-bold text-orange-500 mb-1">{day.퇴근}</span>
-                          )}
-                          <div
-                            className="w-full bg-orange-400 rounded-t-sm transition-all duration-500"
-                            style={{ height: `${(day.퇴근 / maxVal) * 140}px`, minHeight: day.퇴근 > 0 ? "4px" : "0" }}
-                          />
-                        </div>
-                      </div>
-                      <div className="text-[10px] sm:text-xs text-gray-600 mt-2 font-medium">{day.date}</div>
+                {/* Chart area */}
+                <div className="relative" style={{ height: `${barHeight + 40}px` }}>
+                  {/* Y-axis grid lines */}
+                  {gridLines.map((val, i) => (
+                    <div
+                      key={i}
+                      className="absolute left-0 right-0 flex items-center"
+                      style={{ top: `${(i / 4) * barHeight}px` }}
+                    >
+                      <span className="text-[10px] text-gray-400 w-6 text-right mr-2 shrink-0">{val}</span>
+                      <div className="flex-1 border-t border-gray-100" />
                     </div>
                   ))}
-                </div>
-                <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 bg-blue-500 rounded-sm" />
-                    <span className="text-xs text-gray-600">출근</span>
+                  {/* Zero line */}
+                  <div
+                    className="absolute left-0 right-0 flex items-center"
+                    style={{ top: `${barHeight}px` }}
+                  >
+                    <span className="text-[10px] text-gray-400 w-6 text-right mr-2 shrink-0">0</span>
+                    <div className="flex-1 border-t border-gray-200" />
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 bg-orange-400 rounded-sm" />
-                    <span className="text-xs text-gray-600">퇴근</span>
+
+                  {/* Bars */}
+                  <div className="absolute left-8 right-0 bottom-0 flex items-end justify-around" style={{ height: `${barHeight + 40}px` }}>
+                    {chartData.map((day, index) => {
+                      const isToday = index === chartData.length - 1
+                      return (
+                        <div key={index} className="flex-1 flex flex-col items-center justify-end group cursor-default" style={{ height: `${barHeight + 40}px` }}>
+                          {/* Tooltip on hover */}
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gray-800 text-white text-[10px] rounded-lg px-2.5 py-1.5 mb-1 whitespace-nowrap shadow-lg pointer-events-none">
+                            <div className="font-semibold mb-0.5">{day.date}</div>
+                            <div>출근 <span className="text-blue-300 font-bold">{day.출근}</span> / 퇴근 <span className="text-orange-300 font-bold">{day.퇴근}</span></div>
+                          </div>
+                          <div className="flex items-end gap-1 sm:gap-1.5 w-full justify-center px-1" style={{ height: `${barHeight}px` }}>
+                            {/* Entry bar */}
+                            <div className="flex flex-col items-center justify-end h-full flex-1 max-w-[32px]">
+                              {day.출근 > 0 && (
+                                <span className="text-[10px] sm:text-xs font-bold text-blue-600 mb-1">{day.출근}</span>
+                              )}
+                              <div
+                                className="w-full rounded-t-md transition-all duration-700 ease-out group-hover:brightness-110"
+                                style={{
+                                  height: `${(day.출근 / maxVal) * (barHeight - 20)}px`,
+                                  minHeight: day.출근 > 0 ? "6px" : "0",
+                                  background: "linear-gradient(to top, #2563eb, #60a5fa)",
+                                  boxShadow: day.출근 > 0 ? "0 -2px 8px rgba(37,99,235,0.2)" : "none",
+                                }}
+                              />
+                            </div>
+                            {/* Exit bar */}
+                            <div className="flex flex-col items-center justify-end h-full flex-1 max-w-[32px]">
+                              {day.퇴근 > 0 && (
+                                <span className="text-[10px] sm:text-xs font-bold text-orange-500 mb-1">{day.퇴근}</span>
+                              )}
+                              <div
+                                className="w-full rounded-t-md transition-all duration-700 ease-out group-hover:brightness-110"
+                                style={{
+                                  height: `${(day.퇴근 / maxVal) * (barHeight - 20)}px`,
+                                  minHeight: day.퇴근 > 0 ? "6px" : "0",
+                                  background: "linear-gradient(to top, #ea580c, #fb923c)",
+                                  boxShadow: day.퇴근 > 0 ? "0 -2px 8px rgba(234,88,12,0.2)" : "none",
+                                }}
+                              />
+                            </div>
+                          </div>
+                          {/* Date label */}
+                          <div className={`text-xs mt-2 font-medium ${isToday ? "text-blue-600 font-bold" : "text-gray-500"}`}>
+                            {day.date}
+                            {isToday && <div className="text-[9px] text-blue-400 font-normal">오늘</div>}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Legend */}
+                <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3.5 h-3.5 rounded-sm" style={{ background: "linear-gradient(to top, #2563eb, #60a5fa)" }} />
+                    <span className="text-xs font-medium text-gray-600">출근</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3.5 h-3.5 rounded-sm" style={{ background: "linear-gradient(to top, #ea580c, #fb923c)" }} />
+                    <span className="text-xs font-medium text-gray-600">퇴근</span>
                   </div>
                 </div>
               </div>
             )
           })()}
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gradient-to-r from-blue-50 to-orange-50 rounded-lg">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{chartData.reduce((s, d) => s + d.출근, 0)}</div>
-              <div className="text-sm text-gray-600">주간 총 출근</div>
+          {/* Summary stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 text-center">
+              <div className="text-3xl font-extrabold text-blue-600">{chartData.reduce((s, d) => s + d.출근, 0)}</div>
+              <div className="text-xs font-medium text-blue-500 mt-1">주간 총 출근</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{chartData.reduce((s, d) => s + d.퇴근, 0)}</div>
-              <div className="text-sm text-gray-600">주간 총 퇴근</div>
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 text-center">
+              <div className="text-3xl font-extrabold text-orange-600">{chartData.reduce((s, d) => s + d.퇴근, 0)}</div>
+              <div className="text-xs font-medium text-orange-500 mt-1">주간 총 퇴근</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
+            <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl p-4 text-center">
+              <div className="text-3xl font-extrabold text-emerald-600">
                 {Math.round(chartData.reduce((s, d) => s + d.출근, 0) / 7)}
               </div>
-              <div className="text-sm text-gray-500">일평균 출입</div>
+              <div className="text-xs font-medium text-emerald-500 mt-1">일평균 출입</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
+            <div className="bg-gradient-to-br from-purple-50 to-violet-100 rounded-xl p-4 text-center">
+              <div className="text-3xl font-extrabold text-violet-600">
                 {chartData.reduce((m, d) => (d.출근 > m.출근 ? d : m), chartData[0]).date}
               </div>
-              <div className="text-sm text-gray-500">최다 출입일</div>
+              <div className="text-xs font-medium text-violet-500 mt-1">최다 출입일</div>
             </div>
           </div>
         </CardContent>
