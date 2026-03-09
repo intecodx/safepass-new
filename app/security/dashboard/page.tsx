@@ -369,15 +369,6 @@ export default function SecurityDashboard() {
       })
     }
 
-    const hasData = chartData.some((item) => item.출근 > 0 || item.퇴근 > 0)
-    if (!hasData) {
-      return chartData.map((item, index) => {
-        const entryCount = index === 6 ? 6 : Math.floor(Math.random() * 8) + 2
-        const exitCount = Math.floor(entryCount * 0.8)
-        return { ...item, 출근: entryCount, 퇴근: exitCount, 총출입: entryCount }
-      })
-    }
-
     return chartData
   }
 
