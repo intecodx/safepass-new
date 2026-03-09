@@ -774,6 +774,32 @@ export const getAccessLogs = async (dateFilter?: string): Promise<AccessLog[]> =
   }
 }
 
+export const getAccessLogsRange = async (startDate: string, endDate: string): Promise<AccessLog[]> => {
+  console.log(`🔄 출입 기록 범위 조회: ${startDate} ~ ${endDate}`)
+
+  try {
+    const startUTC = new Date(`${startDate}T00:00:00+09:00`).toISOString()
+    const endUTC = new Date(`${endDate}T23:59:59+09:00`).toISOString()
+    const { data, error } = await supabase
+      .from("access_logs")
+      .select("user_id, entry_time, exit_time, created_at")
+      .gte("created_at", startUTC)
+      .lte("created_at", endUTC)
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      console.error("❌ 출입 기록 범위 조회 실패:", error)
+      return []
+    }
+
+    console.log(`✅ 범위 조회 출입 기록: ${data?.length || 0}개`)
+    return data || []
+  } catch (error) {
+    console.error("❌ 출입 기록 범위 조회 예외:", error)
+    return []
+  }
+}
+
 export const getUserLatestAccessLog = async (userId: number): Promise<AccessLog | null> => {
   console.log(`🔄 사용자 ${userId}의 최근 출입 기록 조회`)
 

@@ -124,6 +124,7 @@ export default function SecurityDashboard() {
   const [selectedPlan, setSelectedPlan] = useState<string>("all")
   const [constructionPlans, setConstructionPlans] = useState<{ id: number; title: string }[]>([])
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split("T")[0])
+  const [weeklyChartData, setWeeklyChartData] = useState<Record<string, { entry: number; exit: number }>>({})
   const recordsPerPage = 10
 
   useEffect(() => {
@@ -206,6 +207,17 @@ export default function SecurityDashboard() {
         }
       } catch (error) {
         console.log("[v0] 출입 로그 로딩 실패:", error)
+      }
+
+      // 주간 차트 데이터 로드
+      try {
+        const weeklyResponse = await fetch("/api/security/weekly-stats")
+        if (weeklyResponse.ok) {
+          const weeklyData = await weeklyResponse.json()
+          setWeeklyChartData(weeklyData)
+        }
+      } catch (error) {
+        console.log("[v0] 주간 통계 로딩 실패:", error)
       }
 
       accessLogs.sort((a, b) => {
@@ -355,17 +367,13 @@ export default function SecurityDashboard() {
       }).format(d)
 
       const targetKey = ymdKST(d)
-
-      const dayRecords = entryRecords.filter((r) => r.entryCompleted && ymdKST(r.ts) === targetKey)
-
-      const entryCount = dayRecords.filter((r) => r.status === "출입완료" || r.status === "퇴근완료").length
-      const exitCount = dayRecords.filter((r) => r.status === "퇴근완료").length
+      const dayStats = weeklyChartData[targetKey] || { entry: 0, exit: 0 }
 
       chartData.push({
         date: dateLabel,
-        출근: entryCount,
-        퇴근: exitCount,
-        총출입: entryCount,
+        출근: dayStats.entry,
+        퇴근: dayStats.exit,
+        총출입: dayStats.entry,
       })
     }
 
