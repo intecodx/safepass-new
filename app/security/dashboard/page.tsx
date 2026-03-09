@@ -163,7 +163,7 @@ export default function SecurityDashboard() {
     loadDashboardData()
     const interval = setInterval(loadDashboardData, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [selectedDate])
 
   useEffect(() => {
     const updateDate = () => {
