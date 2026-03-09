@@ -32,31 +32,23 @@ export async function GET(request: NextRequest) {
       userLogs.get(log.user_id).push(log)
     })
 
-    // Determine current status for each user based on today's logs
+    // Determine current status for each user based on selected date's logs
+    // (logs are already filtered by date from getAccessLogs)
     userLogs.forEach((userLogList, userId) => {
-      // Filter today's logs only
-      const todayLogs = userLogList.filter((log) => {
-        const logDate = new Date(log.entry_time || log.timestamp).toISOString().split("T")[0]
-        return logDate === today
-      })
-
-      if (todayLogs.length === 0) {
-        // No logs today - status is "미출입"
+      if (userLogList.length === 0) {
         userStatusMap.set(userId, "not_entered")
       } else {
-        // Sort by timestamp to get the latest status
-        todayLogs.sort((a, b) => {
-          const timeA = new Date(a.entry_time || a.timestamp).getTime()
-          const timeB = new Date(b.entry_time || b.timestamp).getTime()
+        // Sort by created_at to get the latest status
+        userLogList.sort((a, b) => {
+          const timeA = new Date(a.created_at).getTime()
+          const timeB = new Date(b.created_at).getTime()
           return timeB - timeA // Latest first
         })
 
-        const latestLog = todayLogs[0]
+        const latestLog = userLogList[0]
         if (latestLog.exit_time) {
-          // Has exit time - status is "퇴근완료"
           userStatusMap.set(userId, "work_completed")
-        } else if (latestLog.entry_time || latestLog.timestamp) {
-          // Has entry but no exit - status is "출근완료"
+        } else if (latestLog.entry_time) {
           userStatusMap.set(userId, "work_started")
         } else {
           userStatusMap.set(userId, "not_entered")

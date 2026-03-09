@@ -41,10 +41,13 @@ export async function GET(request: NextRequest) {
 
     console.log("[v0] Applications fetched:", applications?.length || 0)
 
+    const startUTC = new Date(`${date}T00:00:00+09:00`).toISOString()
+    const endUTC = new Date(`${date}T23:59:59+09:00`).toISOString()
     const { data: accessLogs, error: logsError } = await supabase
       .from("access_logs")
       .select("user_id, entry_time, exit_time, created_at")
-      .gte("created_at", `${date}T00:00:00+09:00`)
+      .gte("created_at", startUTC)
+      .lte("created_at", endUTC)
       .order("created_at", { ascending: false })
 
     if (logsError) {

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { getUsers, getConstructionPlans, getAccessLogs } from "@/lib/supabase-storage"
 
 export const dynamic = "force-dynamic"
@@ -10,7 +10,7 @@ const noStoreHeaders = {
   Expires: "0",
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     console.log("🚀 관리자 신청 목록 조회 시작...")
 
@@ -31,9 +31,10 @@ export async function GET() {
     )
     console.log(`👥 INTECO 사용자: ${intecoUsers.length}명`)
 
-    const today = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" })).toISOString().split("T")[0]
-    const accessLogs = await getAccessLogs(today)
-    console.log(`📋 오늘(${today}) 출입 로그: ${accessLogs.length}개`)
+    const { searchParams } = new URL(request.url)
+    const dateParam = searchParams.get("date") || new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" })).toISOString().split("T")[0]
+    const accessLogs = await getAccessLogs(dateParam)
+    console.log(`📋 ${dateParam} 출입 로그: ${accessLogs.length}개`)
 
     const sortedUsers = intecoUsers.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 

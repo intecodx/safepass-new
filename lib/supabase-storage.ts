@@ -749,11 +749,16 @@ export const getAccessLogs = async (dateFilter?: string): Promise<AccessLog[]> =
   console.log("🔄 출입 기록 조회 시작...")
 
   try {
-    const today = dateFilter || new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" })).toISOString().split("T")[0]
+    const targetDate = dateFilter || new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" })).toISOString().split("T")[0]
+    // KST 00:00:00 = UTC 전날 15:00:00, KST 23:59:59 = UTC 당일 14:59:59
+    const startUTC = new Date(`${targetDate}T00:00:00+09:00`).toISOString()
+    const endUTC = new Date(`${targetDate}T23:59:59+09:00`).toISOString()
+    console.log(`📅 조회 날짜: ${targetDate} (UTC: ${startUTC} ~ ${endUTC})`)
     const { data, error } = await supabase
       .from("access_logs")
       .select("*")
-      .gte("created_at", `${today}T00:00:00+09:00`)
+      .gte("created_at", startUTC)
+      .lte("created_at", endUTC)
       .order("created_at", { ascending: false })
 
     if (error) {

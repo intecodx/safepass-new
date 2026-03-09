@@ -184,7 +184,7 @@ export default function SecurityDashboard() {
       console.log("[v0] 선택된 날짜 필터:", selectedDate)
       console.log("[v0] =====================================")
 
-      const response = await fetch("/api/admin/applications")
+      const response = await fetch(`/api/admin/applications?date=${selectedDate}`)
       const applications: Application[] = await response.json()
       const approvedApplications = applications.filter((app) => app.status === "approved")
 
