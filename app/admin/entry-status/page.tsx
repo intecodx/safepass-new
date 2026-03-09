@@ -139,7 +139,7 @@ export default function EntryStatusPage() {
 
   useEffect(() => {
     fetchEntryStatus()
-    const interval = setInterval(fetchEntryStatus, 5000)
+    const interval = setInterval(fetchEntryStatus, 30000)
     return () => clearInterval(interval)
   }, [selectedDate, selectedConstructionPlan])
 

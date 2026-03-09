@@ -12,12 +12,12 @@ const noStoreHeaders = {
 
 export async function GET() {
   try {
-    const logs = await getAccessLogs()
-
     // Get current date in Korea timezone
     const now = new Date()
     const koreaTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Seoul" }))
     const today = koreaTime.toISOString().split("T")[0] // YYYY-MM-DD format
+
+    const logs = await getAccessLogs(today)
 
     // Process logs to determine current status for each user
     const userStatusMap = new Map()

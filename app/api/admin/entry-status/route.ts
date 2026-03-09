@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
     const { data: accessLogs, error: logsError } = await supabase
       .from("access_logs")
       .select("user_id, entry_time, exit_time, created_at")
+      .gte("created_at", `${date}T00:00:00+09:00`)
       .order("created_at", { ascending: false })
 
     if (logsError) {

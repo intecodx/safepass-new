@@ -31,8 +31,9 @@ export async function GET() {
     )
     console.log(`👥 INTECO 사용자: ${intecoUsers.length}명`)
 
-    const accessLogs = await getAccessLogs()
-    console.log(`📋 출입 로그: ${accessLogs.length}개`)
+    const today = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" })).toISOString().split("T")[0]
+    const accessLogs = await getAccessLogs(today)
+    console.log(`📋 오늘(${today}) 출입 로그: ${accessLogs.length}개`)
 
     const sortedUsers = intecoUsers.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 

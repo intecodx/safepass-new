@@ -745,11 +745,16 @@ export const addAccessLog = async (accessData: {
   }
 }
 
-export const getAccessLogs = async (): Promise<AccessLog[]> => {
+export const getAccessLogs = async (dateFilter?: string): Promise<AccessLog[]> => {
   console.log("🔄 출입 기록 조회 시작...")
 
   try {
-    const { data, error } = await supabase.from("access_logs").select("*").order("created_at", { ascending: false })
+    const today = dateFilter || new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" })).toISOString().split("T")[0]
+    const { data, error } = await supabase
+      .from("access_logs")
+      .select("*")
+      .gte("created_at", `${today}T00:00:00+09:00`)
+      .order("created_at", { ascending: false })
 
     if (error) {
       console.error("❌ 출입 기록 조회 실패:", error)

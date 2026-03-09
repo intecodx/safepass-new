@@ -161,7 +161,7 @@ export default function SecurityDashboard() {
 
   useEffect(() => {
     loadDashboardData()
-    const interval = setInterval(loadDashboardData, 2000)
+    const interval = setInterval(loadDashboardData, 30000)
     return () => clearInterval(interval)
   }, [])
 

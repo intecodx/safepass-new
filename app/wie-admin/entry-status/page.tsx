@@ -124,7 +124,7 @@ export default function WieEntryStatusPage() {
   useEffect(() => {
     setIsInitialLoad(true)
     fetchEntryStatus()
-    const interval = setInterval(fetchEntryStatus, 5000) // Reduced refresh interval from 30 seconds to 5 seconds for near real-time updates
+    const interval = setInterval(fetchEntryStatus, 30000)
     return () => clearInterval(interval)
   }, [selectedDate, selectedConstructionPlan])
 
