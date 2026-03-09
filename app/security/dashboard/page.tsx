@@ -190,7 +190,7 @@ export default function SecurityDashboard() {
 
       let accessLogs: any[] = []
       try {
-        const accessResponse = await fetch("/api/security/access-logs")
+        const accessResponse = await fetch(`/api/security/access-logs?date=${selectedDate}`)
         if (accessResponse.ok) {
           accessLogs = await accessResponse.json()
           console.log("[v0] 총 출입 로그:", accessLogs.length)

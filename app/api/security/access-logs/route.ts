@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { getAccessLogs } from "@/lib/supabase-storage"
 
 export const dynamic = "force-dynamic"
@@ -10,12 +10,13 @@ const noStoreHeaders = {
   Expires: "0",
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Get current date in Korea timezone
+    const { searchParams } = new URL(request.url)
     const now = new Date()
     const koreaTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Seoul" }))
-    const today = koreaTime.toISOString().split("T")[0] // YYYY-MM-DD format
+    const today = searchParams.get("date") || koreaTime.toISOString().split("T")[0]
 
     const logs = await getAccessLogs(today)
 
