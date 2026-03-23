@@ -139,7 +139,7 @@ export default function EntryStatusPage() {
 
   useEffect(() => {
     fetchEntryStatus()
-    const interval = setInterval(fetchEntryStatus, 30000)
+    const interval = setInterval(fetchEntryStatus, 60000) // 60초 (기존 30초→트래픽 절감)
     return () => clearInterval(interval)
   }, [selectedDate, selectedConstructionPlan])
 

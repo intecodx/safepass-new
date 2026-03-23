@@ -155,7 +155,7 @@ export default function WieSecurityDashboard() {
 
   useEffect(() => {
     loadDashboardData()
-    const interval = setInterval(loadDashboardData, 2000)
+    const interval = setInterval(loadDashboardData, 60000) // 60초 (기존 2초→트래픽 30배 절감)
     return () => clearInterval(interval)
   }, [])
 

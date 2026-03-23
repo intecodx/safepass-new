@@ -593,7 +593,7 @@ export default function ApplicationsPage() {
     fetchApplications()
     const interval = setInterval(() => {
       fetchApplications(true)
-    }, 30000) // 30초마다 자동 새로고침
+    }, 60000) // 60초마다 자동 새로고침 (기존 30초→트래픽 절감)
     return () => clearInterval(interval)
   }, [])
 
