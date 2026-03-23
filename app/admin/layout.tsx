@@ -209,5 +209,3 @@ export default function AdminLayout({
     </div>
   )
 }
-// app/admin/layout.tsx
-export const dynamic = "force-dynamic" // 또는 export const revalidate = 0;

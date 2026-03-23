@@ -60,12 +60,7 @@ export default function WieStatisticsPage() {
         setLoading(true)
       }
 
-      const response = await fetch("/api/wie-admin/statistics", {
-        cache: "no-store",
-        headers: {
-          "Cache-Control": "no-cache",
-        },
-      })
+      const response = await fetch("/api/wie-admin/statistics")
 
       if (response.ok) {
         const data = await response.json()

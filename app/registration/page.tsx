@@ -1,6 +1,5 @@
 "use client"
 
-export const dynamic = "force-dynamic" // 또는 export const revalidate = 0
 
 import type React from "react"
 import { useState, useEffect } from "react"
@@ -371,8 +370,6 @@ export default function RegistrationPage() {
       const response = await fetch("/api/construction-plans", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        next: { tags: ["construction-plans"] }, // ★ 추가: 태그 기반 무효화와 연결
       })
 
       console.log("Response status:", response.status)

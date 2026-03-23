@@ -161,13 +161,13 @@ export default function WieSecurityDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      const response = await fetch("/api/wie-security/applications", { cache: "no-store" })
+      const response = await fetch("/api/wie-security/applications")
       const applications: Application[] = await response.json()
       const approvedApplications = applications.filter((app) => app.status === "approved")
 
       let accessLogs: any[] = []
       try {
-        const accessResponse = await fetch("/api/wie-security/access-logs", { cache: "no-store" })
+        const accessResponse = await fetch("/api/wie-security/access-logs")
         if (accessResponse.ok) {
           accessLogs = await accessResponse.json()
         }

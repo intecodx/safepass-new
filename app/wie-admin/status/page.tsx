@@ -57,12 +57,7 @@ export default function WieAdminStatusPage() {
         setLoading(true)
       }
 
-      const response = await fetch("/api/wie-admin/applications", {
-        cache: "no-store",
-        headers: {
-          "Cache-Control": "no-cache",
-        },
-      })
+      const response = await fetch("/api/wie-admin/applications")
 
       if (response.ok) {
         const data = await response.json()

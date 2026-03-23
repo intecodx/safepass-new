@@ -78,10 +78,7 @@ export default function ApplicationsPage() {
 
   const fetchPlans = async () => {
     try {
-      const response = await fetch("/api/admin/construction-plans", {
-        cache: "no-store",
-        headers: { "Cache-Control": "no-cache" },
-      })
+      const response = await fetch("/api/admin/construction-plans")
       if (response.ok) {
         const data = await response.json()
         const normalized = (Array.isArray(data) ? data : []).map((p: any) => ({
@@ -107,12 +104,7 @@ export default function ApplicationsPage() {
       }
 
       console.log("신청 목록 조회 시작...")
-      const response = await fetch("/api/admin/applications", {
-        cache: "no-store",
-        headers: {
-          "Cache-Control": "no-cache",
-        },
-      })
+      const response = await fetch("/api/admin/applications")
 
       console.log("응답 상태:", response.status)
 

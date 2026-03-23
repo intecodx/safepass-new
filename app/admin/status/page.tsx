@@ -57,12 +57,7 @@ export default function AdminStatusPage() {
         setLoading(true)
       }
 
-      const response = await fetch("/api/admin/applications", {
-        cache: "no-store",
-        headers: {
-          "Cache-Control": "no-cache",
-        },
-      })
+      const response = await fetch("/api/admin/applications")
 
       if (response.ok) {
         const data = await response.json()

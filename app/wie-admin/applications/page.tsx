@@ -85,12 +85,7 @@ export default function WIEApplicationsPage() {
       }
 
       console.log("WIE 신청 목록 조회 시작...")
-      const response = await fetch("/api/wie-admin/applications", {
-        cache: "no-store",
-        headers: {
-          "Cache-Control": "no-cache",
-        },
-      })
+      const response = await fetch("/api/wie-admin/applications")
 
       console.log("응답 상태:", response.status)
 
@@ -113,10 +108,7 @@ export default function WIEApplicationsPage() {
 
   const fetchPlans = async () => {
     try {
-      const response = await fetch("/api/wie-admin/construction-plans", {
-        cache: "no-store",
-        headers: { "Cache-Control": "no-cache" },
-      })
+      const response = await fetch("/api/wie-admin/construction-plans")
       if (response.ok) {
         const data = await response.json()
         const normalized = (Array.isArray(data) ? data : []).map((p: any) => ({

@@ -138,19 +138,19 @@ export default function SecurityDashboard() {
     // Listen for storage changes from other tabs/windows
     window.addEventListener("storage", handleStorageChange)
 
-    // Poll localStorage every 5 seconds to catch same-window updates (기존 1초→트래픽 절감)
+    // Poll localStorage every 30 seconds to catch same-window updates (트래픽 절감)
     const pollInterval = setInterval(() => {
       const lastScan = localStorage.getItem("inteco_scan_update")
       if (lastScan) {
         const scanTime = Number.parseInt(lastScan)
         const now = Date.now()
-        if (now - scanTime < 6000) {
+        if (now - scanTime < 31000) {
           console.log("[v0] 최근 QR 스캔 감지 - 대시보드 새로고침")
           loadDashboardData()
           localStorage.removeItem("inteco_scan_update")
         }
       }
-    }, 5000)
+    }, 30000)
 
     return () => {
       window.removeEventListener("storage", handleStorageChange)

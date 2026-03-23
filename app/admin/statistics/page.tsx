@@ -60,12 +60,7 @@ export default function StatisticsPage() {
         setLoading(true)
       }
 
-      const response = await fetch("/api/admin/statistics", {
-        cache: "no-store",
-        headers: {
-          "Cache-Control": "no-cache",
-        },
-      })
+      const response = await fetch("/api/admin/statistics")
 
       if (response.ok) {
         const data = await response.json()
