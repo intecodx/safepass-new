@@ -155,9 +155,9 @@ export default function WieSecurityDashboard() {
 
   useEffect(() => {
     loadDashboardData()
-    const interval = setInterval(loadDashboardData, 60000) // 60초 (기존 2초→트래픽 30배 절감)
+    const interval = setInterval(loadDashboardData, 300000) // 5분 (기존 60초→추가 트래픽 절감)
     return () => clearInterval(interval)
-  }, [])
+  }, [selectedDate])
 
   const loadDashboardData = async () => {
     try {
@@ -167,7 +167,7 @@ export default function WieSecurityDashboard() {
 
       let accessLogs: any[] = []
       try {
-        const accessResponse = await fetch("/api/wie-security/access-logs")
+        const accessResponse = await fetch(`/api/wie-security/access-logs?date=${selectedDate}`)
         if (accessResponse.ok) {
           accessLogs = await accessResponse.json()
         }

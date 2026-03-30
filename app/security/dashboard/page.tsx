@@ -160,7 +160,7 @@ export default function SecurityDashboard() {
 
   useEffect(() => {
     loadDashboardData()
-    const interval = setInterval(loadDashboardData, 60000) // 60초 (기존 30초→트래픽 절감)
+    const interval = setInterval(loadDashboardData, 300000) // 5분 (기존 60초→추가 트래픽 절감)
     return () => clearInterval(interval)
   }, [selectedDate])
 

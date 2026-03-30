@@ -26,7 +26,17 @@ export async function GET(request: NextRequest) {
     const { data: applications, error } = await supabase
       .from("users")
       .select(`
-        *,
+        id,
+        name,
+        phone,
+        nationality,
+        birth_date,
+        gender,
+        status,
+        roles,
+        vehicle_info,
+        construction_plan_id,
+        created_at,
         construction_plans(
           id,
           title,

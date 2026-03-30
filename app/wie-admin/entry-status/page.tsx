@@ -124,7 +124,7 @@ export default function WieEntryStatusPage() {
   useEffect(() => {
     setIsInitialLoad(true)
     fetchEntryStatus()
-    const interval = setInterval(fetchEntryStatus, 60000) // 60초 (기존 30초→트래픽 절감)
+    const interval = setInterval(fetchEntryStatus, 300000) // 5분 (기존 60초→추가 트래픽 절감)
     return () => clearInterval(interval)
   }, [selectedDate, selectedConstructionPlan])
 

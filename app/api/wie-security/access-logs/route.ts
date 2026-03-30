@@ -11,8 +11,16 @@ const noStoreHeaders = {
   Expires: "0",
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const now = new Date()
+    const koreaTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Seoul" }))
+    const dateParam = searchParams.get("date") || koreaTime.toISOString().split("T")[0]
+
+    const startUTC = new Date(`${dateParam}T00:00:00+09:00`).toISOString()
+    const endUTC = new Date(`${dateParam}T23:59:59+09:00`).toISOString()
+
     const cookieStore = await cookies()
 
     const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
@@ -25,8 +33,6 @@ export async function GET() {
             cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
           } catch {
             // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
           }
         },
       },
@@ -35,13 +41,23 @@ export async function GET() {
     const { data: accessLogs, error } = await supabase
       .from("access_logs")
       .select(`
-        *,
+        id,
+        user_id,
+        entry_time,
+        exit_time,
+        created_at,
         user:users!inner(
-          *,
-          construction_plan:construction_plans!inner(*)
+          id,
+          name,
+          phone,
+          status,
+          construction_plan:construction_plans!inner(id, title, company)
         )
       `)
       .eq("user.construction_plan.company", "WIE")
+      .gte("created_at", startUTC)
+      .lte("created_at", endUTC)
+      .order("created_at", { ascending: false })
 
     if (error) {
       console.error("WIE 출입 로그 조회 오류:", error)

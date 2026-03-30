@@ -35,8 +35,17 @@ export async function GET() {
     const { data: applications, error } = await supabase
       .from("users")
       .select(`
-        *,
-        construction_plan:construction_plans(*)
+        id,
+        name,
+        phone,
+        nationality,
+        birth_date,
+        gender,
+        status,
+        roles,
+        vehicle_info,
+        created_at,
+        construction_plan:construction_plans(id, title, company, end_date)
       `)
       .eq("construction_plans.company", "WIE")
       .eq("status", "approved")
