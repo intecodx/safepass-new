@@ -572,11 +572,16 @@ export default function RegistrationPage() {
                       className="w-full h-10 sm:h-12 px-4 pr-10 bg-white border-2 border-gray-300 rounded-lg text-sm appearance-none hover:border-blue-400 focus:border-blue-500 focus:outline-none shadow-sm"
                     >
                       <option value="">{texts[language].selectPlanPlaceholder}</option>
-                      {filteredConstructionPlans.map((plan) => (
-                        <option key={plan.id} value={plan.id.toString()}>
-                          {plan.title} ({plan.company} | {new Date(plan.start_date).toLocaleDateString(getDateLocale())} ~ {new Date(plan.end_date).toLocaleDateString(getDateLocale())})
-                        </option>
-                      ))}
+                      {filteredConstructionPlans.map((plan) => {
+                        const s = new Date(plan.start_date)
+                        const e = new Date(plan.end_date)
+                        const dateStr = `${s.getMonth()+1}/${s.getDate()}~${e.getMonth()+1}/${e.getDate()}`
+                        return (
+                          <option key={plan.id} value={plan.id.toString()}>
+                            {plan.title} ({dateStr})
+                          </option>
+                        )
+                      })}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                   </div>
