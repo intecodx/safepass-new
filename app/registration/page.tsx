@@ -3,7 +3,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { ArrowLeft, User, AlertCircle } from "lucide-react"
+import { ArrowLeft, User, AlertCircle, ChevronDown } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -563,24 +563,23 @@ export default function RegistrationPage() {
                     <span className="text-xs sm:text-sm text-gray-500">{texts[language].loadingPlans}</span>
                   </div>
                 ) : filteredConstructionPlans.length > 0 ? (
-                  <Select value={selectedPlan} onValueChange={handlePlanSelect} required>
-                    <SelectTrigger className="h-10 sm:h-12 bg-white border-2 border-gray-300 hover:border-blue-400 focus:border-blue-500 shadow-sm">
-                      <SelectValue placeholder={texts[language].selectPlanPlaceholder} />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                  <div className="relative">
+                    <select
+                      value={selectedPlan}
+                      onChange={(e) => handlePlanSelect(e.target.value)}
+                      required
+                      title={texts[language].selectPlanPlaceholder}
+                      className="w-full h-10 sm:h-12 px-4 pr-10 bg-white border-2 border-gray-300 rounded-lg text-sm appearance-none hover:border-blue-400 focus:border-blue-500 focus:outline-none shadow-sm"
+                    >
+                      <option value="">{texts[language].selectPlanPlaceholder}</option>
                       {filteredConstructionPlans.map((plan) => (
-                        <SelectItem key={plan.id} value={plan.id.toString()} className="hover:bg-blue-50">
-                          <div className="flex flex-col">
-                            <span className="font-medium text-sm">{plan.title}</span>
-                            <span className="text-xs text-gray-500">
-                              {plan.company} | {new Date(plan.start_date).toLocaleDateString(getDateLocale())} ~{" "}
-                              {new Date(plan.end_date).toLocaleDateString(getDateLocale())}
-                            </span>
-                          </div>
-                        </SelectItem>
+                        <option key={plan.id} value={plan.id.toString()}>
+                          {plan.title} ({plan.company} | {new Date(plan.start_date).toLocaleDateString(getDateLocale())} ~ {new Date(plan.end_date).toLocaleDateString(getDateLocale())})
+                        </option>
                       ))}
-                    </SelectContent>
-                  </Select>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
                 ) : (
                   <div className="h-10 sm:h-12 bg-gray-100 rounded-md flex items-center justify-center px-2">
                     <span className="text-xs sm:text-sm text-gray-500 text-center">
