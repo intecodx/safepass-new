@@ -5,8 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, UserCheck, UserX, RefreshCw, Calendar } from "lucide-react"
+import { Search, UserCheck, UserX, RefreshCw, Calendar, ChevronDown } from "lucide-react"
 
 const KST = "Asia/Seoul" as const
 
@@ -352,19 +351,22 @@ export default function EntryStatusPage() {
             {/* Construction Plan Filter */}
             <div className="flex flex-col gap-2 w-full sm:w-64">
               <span className="text-sm font-medium text-gray-700">공사명 필터</span>
-              <Select value={selectedConstructionPlan} onValueChange={setSelectedConstructionPlan}>
-                <SelectTrigger className="w-full bg-white">
-                  <SelectValue placeholder="공사 선택" />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="all">전체</SelectItem>
+              <div className="relative">
+                <select
+                  value={selectedConstructionPlan}
+                  onChange={(e) => setSelectedConstructionPlan(e.target.value)}
+                  title="공사명 필터"
+                  className="w-full h-10 px-3 pr-10 bg-white border border-gray-300 rounded-md text-sm appearance-none focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="all">전체</option>
                   {constructionPlans.map((plan) => (
-                    <SelectItem key={plan} value={plan}>
+                    <option key={plan} value={plan}>
                       {plan}
-                    </SelectItem>
+                    </option>
                   ))}
-                </SelectContent>
-              </Select>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              </div>
             </div>
 
             {/* Search Input */}
