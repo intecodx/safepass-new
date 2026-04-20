@@ -665,8 +665,8 @@ ${currentContent.fireRange}`
                 <CardContent>
                   <div className="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden">
                     <Image
-                      src="/inteco-evacuation.png"
-                      alt="인천종합에너지 비상대피소 전경"
+                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-zF7NaZjnhpDVHYKZweTsKPWQM4z64q.png"
+                      alt="창고정비동1층 화재대피 안내도"
                       fill
                       className="object-contain"
                     />
