@@ -79,20 +79,11 @@ function ymdKST(input: number | Date | string) {
     .replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3")
 }
 
+// 업무일 기준: 새벽 5시(KST)에 날짜 변경 (KST-5h = UTC+4h)
 function getTodayKST(): string {
   const now = new Date()
-  const kstDate = new Intl.DateTimeFormat("ko-KR", {
-    timeZone: KST,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now)
-
-  // Convert "2025. 10. 28." to "2025-10-28"
-  return kstDate
-    .replace(/\./g, "")
-    .replace(/\s/g, "")
-    .replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3")
+  const businessTime = new Date(now.getTime() + 4 * 60 * 60 * 1000)
+  return businessTime.toISOString().split("T")[0]
 }
 
 /** ===================== 타입 ===================== **/

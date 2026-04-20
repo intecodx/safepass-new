@@ -123,7 +123,13 @@ export default function SecurityDashboard() {
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedPlan, setSelectedPlan] = useState<string>("all")
   const [constructionPlans, setConstructionPlans] = useState<{ id: number; title: string }[]>([])
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split("T")[0])
+  // 업무일 기준: 새벽 5시(KST)에 날짜 변경 (KST-5h = UTC+4h)
+  const getBusinessDate = () => {
+    const now = new Date()
+    const businessTime = new Date(now.getTime() + 4 * 60 * 60 * 1000)
+    return businessTime.toISOString().split("T")[0]
+  }
+  const [selectedDate, setSelectedDate] = useState<string>(getBusinessDate())
   const [weeklyChartData, setWeeklyChartData] = useState<Record<string, { entry: number; exit: number }>>({})
   const recordsPerPage = 10
 
@@ -166,10 +172,10 @@ export default function SecurityDashboard() {
 
   useEffect(() => {
     const updateDate = () => {
-      const today = new Date().toISOString().split("T")[0]
+      const today = getBusinessDate()
       setSelectedDate(today)
     }
-    const interval = setInterval(updateDate, 60000) // Update every minute
+    const interval = setInterval(updateDate, 60000) // 1분마다 업무일 체크
     return () => clearInterval(interval)
   }, [])
 
